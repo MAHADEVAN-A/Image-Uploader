@@ -17,9 +17,6 @@ const companySchema = mongoose.Schema({
     required: [true, 'user name is required'],
     minlength: [4, 'user name should contain at least 4 characters'],
   },
-  products: [{
-    
-  }]
 });
 
 module.exports = mongoose.model('Company', companySchema);

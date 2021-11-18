@@ -27,21 +27,39 @@ exports.fetchCompany = async (req, res) => {
   }
 };
 
-exports.getImage = async (req, res) => {
-  const all_images = await Product.find();
-  res.json(all_images);
+exports.fetchAllCompany = async (req, res) => {
+  try {
+    // console.log('fetching...');
+    const comp = await Company.find();
+    res.status(200).json({ comp });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-exports.deleteImage = async (req, res) => {
-  const imgID = req.params.id;
-  const image = await Product.findOneAndDelete({ _id: imgID });
-  if (!image) {
+exports.getProduct = async (req, res) => {
+  const all_products = await Product.find().populate('company');
+  res.json(all_products);
+};
+
+// exports.getProducts = async (req,res)=>{
+//   const compID = req.params.id;
+//   const products = await Product.find({company: compID});
+//   res.status(200).json({ products });
+// }
+
+exports.deleteProduct = async(req,res)=>{
+  const prodID = req.params.id;
+  const prod = await Product.findOneAndDelete({ _id: prodID });
+  if (!prod) {
     return res.status(404).json({ msg: `No task with id:${imgID}` });
   }
-  res.status(200).json({ image });
-};
+  res.status(200).json({ msg:'Success' });
+}
 
-exports.uploads = (req, res, next) => {
+exports.uploadProduct = (req, res, next) => {
+  console.log(req.files)
+  console.log(req.body)
   const files = req.files;
   if (!files) {
     const error = new Error('Please choose files');
@@ -61,17 +79,19 @@ exports.uploads = (req, res, next) => {
       title: req.body.title,
       description: req.body.description,
       price: req.body.price,
-      company: req.body.company,
+      company: req.params.id,
       filename: files[index].originalname,
       contentType: files[index].mimetype,
       imageBase64: src,
     };
-    let newUpload = new UploadModel(finalimg);
+    console.log(finalimg);
+    let newUpload = new Product(finalimg);
     return newUpload
       .save()
-      .then(() => {
+      .then((data) => {
         return {
           msg: `${files[index].originalname} image Uploaded Successfully...!`,
+          data
         };
       })
       .catch((error) => {
@@ -92,8 +112,8 @@ exports.uploads = (req, res, next) => {
 
   Promise.all(result)
     .then((msg) => {
-      // res.json(msg)
-      res.redirect('/');
+      res.json(msg)
+      // res.redirect('/');
     })
     .catch((error) => {
       res.json(error);
